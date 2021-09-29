@@ -29,6 +29,8 @@ extern "C" {
 ogs_sbi_request_t *amf_nnssf_nsselection_build_get(
         amf_sess_t *sess, void *data);
 
+ogs_sbi_request_t *amf_nnssf_nsselection_build_registration_get(
+        amf_ue_t *amf_ue, void *data);
 #ifdef __cplusplus
 }
 #endif

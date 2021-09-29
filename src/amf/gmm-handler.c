@@ -368,7 +368,8 @@ int gmm_handle_registration_update(amf_ue_t *amf_ue,
                         amf_ue->requested_nssai.s_nssai[i].sst,
                         amf_ue->requested_nssai.s_nssai[i].sd.v);
             }
-            return OGS_ERROR;
+            // The AMF does not support any of the UE's requested NSSAI
+            return OGS_AMF_NO_NSSAI;
         }
     }
 

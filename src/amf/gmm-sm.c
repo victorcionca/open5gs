@@ -744,6 +744,15 @@ void gmm_state_security_mode(ogs_fsm_t *s, amf_event_t *e)
             rv = gmm_handle_security_mode_complete(
                     amf_ue, &nas_message->gmm.security_mode_complete);
             if (rv != OGS_OK) {
+                if (rv == OGS_AMF_NO_NSSAI){
+                    ogs_info("AMF cannot handle UE's requested NSSAI");
+                    /* Determine handling AMF with the help of NSSF */
+                    /* TODO */
+                    ogs_assert(true ==
+                            amf_ue_sbi_discover_and_send(OpenAPI_nf_type_NSSF, amf_ue, NULL,
+                                amf_nnssf_nsselection_build_registration_get));
+                    break;
+                }
                 ogs_error("[%s] Cannot handle NAS message", amf_ue->suci);
                 ogs_assert(OGS_OK ==
                     nas_5gs_send_gmm_reject(amf_ue,

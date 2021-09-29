@@ -47,3 +47,32 @@ ogs_sbi_request_t *amf_nnssf_nsselection_build_get(
 
     return request;
 }
+
+ogs_sbi_request_t *amf_nnssf_nsselection_build_registration_get(
+        amf_ue_t *amf_ue, void *data)
+{
+    ogs_sbi_message_t message;
+    ogs_sbi_request_t *request = NULL;
+
+    ogs_assert(amf_ue);
+
+    memset(&message, 0, sizeof(message));
+    message.h.method = (char *)OGS_SBI_HTTP_METHOD_GET;
+    message.h.service.name = (char *)OGS_SBI_SERVICE_NAME_NNSSF_NSSELECTION;
+    message.h.api.version = (char *)OGS_SBI_API_V2;
+    message.h.resource.component[0] =
+        (char *)OGS_SBI_RESOURCE_NAME_NETWORK_SLICE_INFORMATION;
+
+    message.param.nf_id = ogs_sbi_self()->nf_instance_id;
+    message.param.nf_type = amf_self()->nf_type;
+
+    message.param.slice_info_request_for_registration_presence = true;
+    ogs_assert(amf_ue->requested_nssai.num_of_s_nssai > 0);
+    message.param.s_nssai.sst = amf_ue->requested_nssai.s_nssai[0].sst;
+    message.param.s_nssai.sd.v = amf_ue->requested_nssai.s_nssai[0].sd.v;
+
+    request = ogs_sbi_build_request(&message);
+    ogs_assert(request);
+
+    return request;
+}
