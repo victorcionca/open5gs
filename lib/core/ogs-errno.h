@@ -77,6 +77,7 @@ typedef int ogs_err_t;
 #define OGS_RETRY   -2
 #define OGS_TIMEUP  -3
 #define OGS_DONE    -4
+#define OGS_AMF_NO_NSSAI    -5
 
 char *ogs_strerror(ogs_err_t err, char *buf, size_t size);
 
