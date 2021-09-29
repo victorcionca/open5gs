@@ -382,6 +382,46 @@ ogs_sbi_request_t *ogs_sbi_build_request(ogs_sbi_message_t *message)
         if (sNSSAI.sd)
             ogs_free(sNSSAI.sd);
     }
+    if (message->param.slice_info_request_for_registration_presence) {
+        OpenAPI_slice_info_for_registration_t SliceInfoForRegistration;
+        OpenAPI_snssai_t sNSSAI;
+
+        char *v = NULL;
+        cJSON *item = NULL;
+
+        ogs_expect_or_return_val(message->param.s_nssai.sst, NULL);
+
+        memset(&sNSSAI, 0, sizeof(sNSSAI));
+        sNSSAI.sst = message->param.s_nssai.sst;
+        sNSSAI.sd = ogs_s_nssai_sd_to_string(message->param.s_nssai.sd);
+
+        memset(&SliceInfoForRegistration, 0, sizeof(SliceInfoForRegistration));
+
+        // Create subscribed NSSAI and mark as default
+        SliceInfoForRegistration.subscribed_nssai = OpenAPI_list_create();
+        OpenAPI_list_add(SliceInfoForRegistration.subscribed_nssai,
+                OpenAPI_subscribed_snssai_create(&sNSSAI, true, 1));
+        SliceInfoForRegistration.is_default_configured_snssai_ind = true;
+        SliceInfoForRegistration.default_configured_snssai_ind = 0;
+        // No, we don't want to map NSSAIs
+        SliceInfoForRegistration.is_request_mapping = false;
+        SliceInfoForRegistration.request_mapping = 0;
+
+        item = OpenAPI_slice_info_for_registration_convertToJSON(
+                &SliceInfoForRegistration);
+        ogs_expect_or_return_val(item, NULL);
+
+        v = cJSON_Print(item);
+        ogs_expect_or_return_val(v, NULL);
+        cJSON_Delete(item);
+
+        ogs_sbi_header_set(request->http.params,
+                OGS_SBI_PARAM_SLICE_INFO_REQUEST_FOR_REGISTRATION, v);
+        ogs_free(v);
+
+        if (sNSSAI.sd)
+            ogs_free(sNSSAI.sd);
+    }
     if (message->param.ipv4addr) {
         ogs_sbi_header_set(request->http.params,
                 OGS_SBI_PARAM_IPV4ADDR, message->param.ipv4addr);
@@ -542,6 +582,37 @@ int ogs_sbi_parse_request(
 
                         OpenAPI_slice_info_for_pdu_session_free(
                                 SliceInfoForPduSession);
+
+                    }
+                    cJSON_Delete(item);
+                }
+            }
+        } else if (!strcmp(ogs_hash_this_key(hi),
+                    OGS_SBI_PARAM_SLICE_INFO_REQUEST_FOR_REGISTRATION)) {
+            char *v = NULL;
+            cJSON *item = NULL;
+            OpenAPI_slice_info_for_registration_t *SliceInfoForRegistration = NULL;
+
+            v = ogs_hash_this_val(hi);
+            if (v) {
+                item = cJSON_Parse(v);
+                if (item) {
+                    SliceInfoForRegistration =
+                        OpenAPI_slice_info_for_registration_parseFromJSON(item);
+                    if (SliceInfoForRegistration) {
+                        // Extract the first subscribed NSSAI
+                        OpenAPI_subscribed_snssai_t *sub_snssai = 
+                            OpenAPI_list_find(SliceInfoForRegistration->subscribed_nssai, 0)->data;
+                        if (sub_snssai) {
+                            message->param.s_nssai.sst = sub_snssai->subscribed_snssai->sst;
+                            message->param.s_nssai.sd =
+                                ogs_s_nssai_sd_from_string(sub_snssai->subscribed_snssai->sd);
+                        }
+                        message->param.
+                            slice_info_request_for_registration_presence = true;
+
+                        OpenAPI_slice_info_for_registration_free(
+                                SliceInfoForRegistration);
 
                     }
                     cJSON_Delete(item);

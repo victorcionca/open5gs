@@ -255,6 +255,8 @@ extern "C" {
 #define OGS_SBI_PARAM_SNSSAI                        "snssai"
 #define OGS_SBI_PARAM_SLICE_INFO_REQUEST_FOR_PDU_SESSION \
         "slice-info-request-for-pdu-session"
+#define OGS_SBI_PARAM_SLICE_INFO_REQUEST_FOR_REGISTRATION \
+        "slice-info-request-for-registration"
 #define OGS_SBI_PARAM_IPV4ADDR                      "ipv4Addr"
 #define OGS_SBI_PARAM_IPV6PREFIX                    "ipv6Prefix"
 
@@ -347,6 +349,7 @@ typedef struct ogs_sbi_message_s {
         bool snssai_presence;
         bool slice_info_request_for_pdu_session_presence;
         OpenAPI_roaming_indication_e roaming_indication;
+        bool slice_info_request_for_registration_presence;
 
         char *ipv4addr;
         char *ipv6prefix;
